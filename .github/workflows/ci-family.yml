@@ -25,9 +25,12 @@ jobs:
           for model in "${models[@]}"; do
             out="$(mktemp -d)/${model}-cpp"
             python3 tools/scaffold.py --model "$model" --lang cpp --project-name "smoke_${model}" --output-dir "$out" --setup
-            cmake --preset native-debug -S "$out"
-            cmake --build --preset native-debug -S "$out"
-            ctest --test-dir "$out/build/native-debug" --output-on-failure
+            (
+              cd "$out"
+              cmake --preset native-debug
+              cmake --build --preset native-debug
+              ctest --test-dir build/native-debug --output-on-failure
+            )
           done
 
   nightly-matrix:
@@ -86,9 +89,12 @@ jobs:
             for preset in native-debug ninja-debug; do
               out="$(mktemp -d)/${model}-${preset}"
               python3 tools/scaffold.py --model "$model" --lang cpp --project-name "nightly_${model}_${preset}" --output-dir "$out" --setup
-              cmake --preset "$preset" -S "$out"
-              cmake --build --preset "$preset" -S "$out"
-              ctest --test-dir "$out/build/${preset}" --output-on-failure
+              (
+                cd "$out"
+                cmake --preset "$preset"
+                cmake --build --preset "$preset"
+                ctest --test-dir "build/${preset}" --output-on-failure
+              )
             done
           done
         shell: bash
