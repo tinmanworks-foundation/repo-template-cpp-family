@@ -56,41 +56,22 @@ jobs:
           expected_checks_for_repo() {
             case "$REPO_NAME" in
               repo-template-base)
-                cat <<'EOF'
-core-validation
-pr-title
-EOF
+                printf '%s\n' "core-validation" "pr-title"
                 ;;
               repo-template-python)
-                cat <<'EOF'
-core-gated (3.10)
-core-gated (3.11)
-core-gated (3.12)
-pr-title
-EOF
+                printf '%s\n' "core-gated (3.10)" "core-gated (3.11)" "core-gated (3.12)" "pr-title"
                 ;;
               repo-template-flutter)
-                cat <<'EOF'
-core-gated
-pr-title
-EOF
+                printf '%s\n' "core-gated" "pr-title"
                 ;;
               repo-template-cpp-cmake)
-                cat <<'EOF'
-build
-pr-title
-EOF
+                printf '%s\n' "build" "pr-title"
                 ;;
               repo-template-cpp-family)
-                cat <<'EOF'
-smoke
-pr-title
-EOF
+                printf '%s\n' "smoke" "pr-title"
                 ;;
               *)
-                cat <<'EOF'
-pr-title
-EOF
+                printf '%s\n' "pr-title"
                 ;;
             esac
           }
