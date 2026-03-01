@@ -65,6 +65,10 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Initialize MSVC toolchain (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install Ninja (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
@@ -83,6 +87,13 @@ jobs:
         run: |
           choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
           "C:\Program Files\CMake\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: powershell
+
+      - name: Verify CMake and MSVC (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake --version
+          (Get-Command cl.exe -ErrorAction Stop).Source
         shell: powershell
 
       - name: Matrix scaffold/build/test
