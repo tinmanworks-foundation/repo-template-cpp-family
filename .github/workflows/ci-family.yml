@@ -115,7 +115,11 @@ jobs:
                 cd "$out"
                 cmake --preset "$preset"
                 cmake --build --preset "$preset"
-                ctest --test-dir "build/${preset}" --output-on-failure
+                ctest_args=(--test-dir "build/${preset}" --output-on-failure)
+                if [[ "${RUNNER_OS}" == "Windows" ]]; then
+                  ctest_args+=(-C Debug)
+                fi
+                ctest "${ctest_args[@]}"
               )
             done
           done
