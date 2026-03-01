@@ -65,6 +65,10 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Initialize MSVC toolchain (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install Ninja (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
@@ -80,7 +84,16 @@ jobs:
 
       - name: Install CMake (Windows)
         if: runner.os == 'Windows'
-        run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+          "C:\Program Files\CMake\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: powershell
+
+      - name: Verify CMake and MSVC (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake --version
+          (Get-Command cl.exe -ErrorAction Stop).Source
         shell: powershell
 
       - name: Matrix scaffold/build/test
@@ -90,15 +103,23 @@ jobs:
         run: |
           set -euo pipefail
           models=(lib exe engine-app workspace plugin-shared plugin-addon)
+          setup_args=(--setup)
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then
+            setup_args=()
+          fi
           for model in "${models[@]}"; do
             for preset in native-debug ninja-debug; do
               out="$(mktemp -d)/${model}-${preset}"
-              python3 tools/scaffold.py --model "$model" --lang cpp --project-name "nightly_${model}_${preset}" --output-dir "$out" --setup
+              python3 tools/scaffold.py --model "$model" --lang cpp --project-name "nightly_${model}_${preset}" --output-dir "$out" "${setup_args[@]}"
               (
                 cd "$out"
                 cmake --preset "$preset"
                 cmake --build --preset "$preset"
-                ctest --test-dir "build/${preset}" --output-on-failure
+                ctest_args=(--test-dir "build/${preset}" --output-on-failure)
+                if [[ "${RUNNER_OS}" == "Windows" ]]; then
+                  ctest_args+=(-C Debug)
+                fi
+                ctest "${ctest_args[@]}"
               )
             done
           done

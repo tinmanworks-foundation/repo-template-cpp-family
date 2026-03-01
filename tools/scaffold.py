@@ -518,7 +518,7 @@ target_link_libraries(${{PROJECT_NAME}}_tests
     GTest::gtest_main
 )
 
-gtest_discover_tests(${{PROJECT_NAME}}_tests)
+add_test(NAME ${{PROJECT_NAME}}_tests COMMAND ${{PROJECT_NAME}}_tests)
 """
 
     return {
@@ -635,7 +635,7 @@ target_link_libraries(${{PROJECT_NAME}}_tests
     GTest::gtest_main
 )
 
-gtest_discover_tests(${{PROJECT_NAME}}_tests)
+add_test(NAME ${{PROJECT_NAME}}_tests COMMAND ${{PROJECT_NAME}}_tests)
 """
 
     return {
@@ -736,6 +736,11 @@ add_library(${{PROJECT_NAME}}_engine ${{ENGINE_LIBRARY_TYPE}}
   src/engine_api.{se}
 )
 
+if(WIN32 AND ENGINE_SHARED)
+  # Ensure a usable import library is produced for MSVC shared-library consumers.
+  set_target_properties(${{PROJECT_NAME}}_engine PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 target_include_directories(${{PROJECT_NAME}}_engine
   PUBLIC
     ${{CMAKE_CURRENT_SOURCE_DIR}}/include
@@ -763,7 +768,15 @@ target_link_libraries(${{PROJECT_NAME}}_tests
     GTest::gtest_main
 )
 
-gtest_discover_tests(${{PROJECT_NAME}}_tests)
+if(WIN32 AND ENGINE_SHARED)
+  add_custom_command(TARGET ${{PROJECT_NAME}}_tests POST_BUILD
+    COMMAND ${{CMAKE_COMMAND}} -E copy_if_different
+      $<TARGET_FILE:${{PROJECT_NAME}}_engine>
+      $<TARGET_FILE_DIR:${{PROJECT_NAME}}_tests>
+  )
+endif()
+
+add_test(NAME ${{PROJECT_NAME}}_tests COMMAND ${{PROJECT_NAME}}_tests)
 """
 
     return {
@@ -906,7 +919,7 @@ target_link_libraries(${{PROJECT_NAME}}_tests
     GTest::gtest_main
 )
 
-gtest_discover_tests(${{PROJECT_NAME}}_tests)
+add_test(NAME ${{PROJECT_NAME}}_tests COMMAND ${{PROJECT_NAME}}_tests)
 """
 
     return {
@@ -1056,7 +1069,15 @@ target_link_libraries(${{PROJECT_NAME}}_tests
     GTest::gtest_main
 )
 
-gtest_discover_tests(${{PROJECT_NAME}}_tests)
+if(WIN32)
+  add_custom_command(TARGET ${{PROJECT_NAME}}_tests POST_BUILD
+    COMMAND ${{CMAKE_COMMAND}} -E copy_if_different
+      $<TARGET_FILE:${{PROJECT_NAME}}_plugin>
+      $<TARGET_FILE_DIR:${{PROJECT_NAME}}_tests>
+  )
+endif()
+
+add_test(NAME ${{PROJECT_NAME}}_tests COMMAND ${{PROJECT_NAME}}_tests)
 """
 
     return {
@@ -1291,6 +1312,11 @@ add_library(${{PROJECT_NAME}}_addon SHARED
   src/addon_api.{se}
 )
 
+if(WIN32)
+  # Export addon entry points so consumers get a usable import library on MSVC.
+  set_target_properties(${{PROJECT_NAME}}_addon PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 target_include_directories(${{PROJECT_NAME}}_addon
   PUBLIC
     ${{CMAKE_CURRENT_SOURCE_DIR}}/include
@@ -1337,7 +1363,15 @@ target_link_libraries(${{PROJECT_NAME}}_tests
     GTest::gtest_main
 )
 
-gtest_discover_tests(${{PROJECT_NAME}}_tests)
+if(WIN32)
+  add_custom_command(TARGET ${{PROJECT_NAME}}_tests POST_BUILD
+    COMMAND ${{CMAKE_COMMAND}} -E copy_if_different
+      $<TARGET_FILE:${{PROJECT_NAME}}_addon>
+      $<TARGET_FILE_DIR:${{PROJECT_NAME}}_tests>
+  )
+endif()
+
+add_test(NAME ${{PROJECT_NAME}}_tests COMMAND ${{PROJECT_NAME}}_tests)
 """
 
     return {

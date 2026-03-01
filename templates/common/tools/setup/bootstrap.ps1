@@ -69,6 +69,8 @@ if ($ShowHelp) {
     exit 0
 }
 
+$script:IsWindowsHost = ($env:OS -eq "Windows_NT")
+
 function Test-VersionAtLeast {
     param([string]$Current, [string]$Minimum)
     try {
@@ -80,14 +82,32 @@ function Test-VersionAtLeast {
 
 function Get-CommandVersion {
     param([string]$Command, [string[]]$Args, [string]$Regex)
-    if (-not (Get-Command $Command -ErrorAction SilentlyContinue)) {
+    $resolvedCommand = $null
+    $commandInfo = Get-Command $Command -ErrorAction SilentlyContinue
+    if ($commandInfo) {
+        $resolvedCommand = $commandInfo.Source
+    } elseif ($script:IsWindowsHost -and $Command -ieq "cmake") {
+        # Git Bash -> PowerShell handoff can make command discovery flaky on some Windows runners.
+        $cmakeCandidates = @(
+            "$env:ProgramFiles\CMake\bin\cmake.exe",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe",
+            "$env:ChocolateyInstall\bin\cmake.exe"
+        ) | Where-Object { $_ -and (Test-Path $_) }
+        if ($cmakeCandidates.Count -gt 0) {
+            $resolvedCommand = $cmakeCandidates[0]
+        }
+    }
+
+    if (-not $resolvedCommand) {
         return $null
     }
     $previousErrorAction = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
         # Some tools print version/help to stderr and return non-zero; capture output without hard-failing doctor mode.
-        $output = ((& $Command @Args 2>&1) | ForEach-Object { $_.ToString() }) -join "`n"
+        $output = ((& $resolvedCommand @Args 2>&1) | ForEach-Object { $_.ToString() }) -join "`n"
     } finally {
         $ErrorActionPreference = $previousErrorAction
     }
@@ -169,7 +189,7 @@ function Run-Checks {
         Write-Host "[warn] clang-format not found (optional)"
     }
 
-    if ($IsWindows) {
+    if ($script:IsWindowsHost) {
         $script:optionalIssues.Add("ccache not evaluated on Windows (optional)")
     } elseif (Get-Command ccache -ErrorAction SilentlyContinue) {
         Write-Host "[ok] ccache"
@@ -217,7 +237,7 @@ function Install-WithChoco {
 function Run-Install {
     Write-Host "== Install mode =="
 
-    if ($IsWindows) {
+    if ($script:IsWindowsHost) {
         if (Get-Command winget -ErrorAction SilentlyContinue) {
             $required = @("Kitware.CMake")
             if ($WithOptional) { $optional = @("Ninja-build.Ninja", "LLVM.LLVM") } else { $optional = @() }
