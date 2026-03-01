@@ -83,7 +83,14 @@ function Get-CommandVersion {
     if (-not (Get-Command $Command -ErrorAction SilentlyContinue)) {
         return $null
     }
-    $output = & $Command @Args 2>&1 | Out-String
+    $previousErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        # Some tools print version/help to stderr and return non-zero; capture output without hard-failing doctor mode.
+        $output = ((& $Command @Args 2>&1) | ForEach-Object { $_.ToString() }) -join "`n"
+    } finally {
+        $ErrorActionPreference = $previousErrorAction
+    }
     $m = [regex]::Match($output, $Regex)
     if ($m.Success) { return $m.Groups[1].Value }
     return $null
@@ -133,7 +140,7 @@ function Run-Checks {
         }
     }
 
-    $msvcVersion = Get-CommandVersion -Command "cl" -Args @() -Regex "Version\s+([0-9]+\.[0-9]+)"
+    $msvcVersion = Get-CommandVersion -Command "cl.exe" -Args @("/?") -Regex "Version\s+([0-9]+\.[0-9]+)"
     if ($msvcVersion) {
         if (Test-VersionAtLeast -Current $msvcVersion -Minimum "19.34") {
             $compilerOk = $true
