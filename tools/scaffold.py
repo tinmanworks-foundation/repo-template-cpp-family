@@ -768,7 +768,15 @@ target_link_libraries(${{PROJECT_NAME}}_tests
     GTest::gtest_main
 )
 
-gtest_discover_tests(${{PROJECT_NAME}}_tests)
+if(WIN32 AND ENGINE_SHARED)
+  add_custom_command(TARGET ${{PROJECT_NAME}}_tests POST_BUILD
+    COMMAND ${{CMAKE_COMMAND}} -E copy_if_different
+      $<TARGET_FILE:${{PROJECT_NAME}}_engine>
+      $<TARGET_FILE_DIR:${{PROJECT_NAME}}_tests>
+  )
+endif()
+
+gtest_discover_tests(${{PROJECT_NAME}}_tests DISCOVERY_MODE PRE_TEST)
 """
 
     return {
