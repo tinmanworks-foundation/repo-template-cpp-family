@@ -736,6 +736,11 @@ add_library(${{PROJECT_NAME}}_engine ${{ENGINE_LIBRARY_TYPE}}
   src/engine_api.{se}
 )
 
+if(WIN32 AND ENGINE_SHARED)
+  # Ensure a usable import library is produced for MSVC shared-library consumers.
+  set_target_properties(${{PROJECT_NAME}}_engine PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 target_include_directories(${{PROJECT_NAME}}_engine
   PUBLIC
     ${{CMAKE_CURRENT_SOURCE_DIR}}/include
