@@ -9,3 +9,4 @@ This repository is the source for generating C/C++ template repositories.
 3. Treat setup scripts as cross-platform contracts (`sh`, `ps1`, `cmd`).
 4. Validate all model scaffolds before release.
 5. Preserve low-friction defaults and explicit error messaging.
+6. For GitHub Project-managed repos, implement only against clear issues; keep issues and commits small and issue-scoped by default (`one issue -> one small commit set`), with documented exceptions for non-diff, discovery-first, or unavoidable architecture-wide work.
