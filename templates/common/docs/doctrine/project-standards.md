@@ -1,11 +1,11 @@
 # Project Standards
 
 Status: Stable  
-Last Reviewed: 2026-02-28
+Last Reviewed: 2026-06-04
 
 ## Purpose
 
-Defines structural standards applied to all personal engineering repositories.  
+Defines structural standards applied to project repositories.
 These standards reduce decision fatigue and ensure consistency across projects.
 
 These are not suggestions — they are defaults unless a project has a strong reason to differ.
@@ -38,6 +38,21 @@ Not all folders must exist, but structure should remain predictable.
 
 **Flutter/Web**
 - Follow ecosystem conventions while keeping docs consistent.
+
+---
+
+## Setup Friction Minimization
+
+Repositories should minimize setup work for first-time contributors and users.
+
+Defaults:
+
+- Keep clone-to-first-build steps short and explicit.
+- For non-trivial prerequisites, provide setup scripts under `tools/setup/`.
+- Prefer a doctor/validation path before install automation.
+- Classify dependencies as required vs optional.
+- Ensure optional tooling never blocks the default build/run path.
+- Document setup checks and fallback commands in README.
 
 ---
 

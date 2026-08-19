@@ -83,6 +83,13 @@ Builds must be reproducible.
 - Stability over novelty
 - Maintainability over shortcuts
 
+## Developer Experience
+
+- Minimize setup burden for contributors.
+- Prefer automation for repetitive environment and bootstrap steps.
+- Keep dependency checks explicit and actionable.
+- Provide graceful fallback paths when optional tools are missing.
+
 ---
 
 ## Comments
