@@ -1,6 +1,6 @@
 # Doctrine Snapshot
 
-This folder contains doctrine files copied from the source Doctrine repository.
+This folder contains a local doctrine snapshot copied from the Doctrine repository.
 
 ## Source of Truth
 
@@ -8,4 +8,9 @@ The canonical source remains the Doctrine repository.
 
 ## Refresh
 
-Re-run scaffold from an updated family template to refresh this snapshot.
+Re-run bootstrap when doctrine updates are needed.
+
+## Export Boundary
+
+This snapshot contains the public doctrine baseline only.
+Identity-specific files and maintainer-local overlays are intentionally not copied by default.

@@ -20,6 +20,12 @@ for model in "${models[@]}"; do
       --output-dir "$out" \
       --setup
 
+    if rg -n -i '(TinMan|LooseWire|TinkerSpace|George Gil|Primary engineering identity|Real/legal identity)' \
+      "$out/AGENTS.md" "$out/AI_CONTEXT.md" "$out/docs/doctrine"; then
+      echo "Generated project contains maintainer identity content" >&2
+      exit 1
+    fi
+
     echo "== build/test ${model}/${lang} =="
     if [[ "$offline_mode" == "1" ]]; then
       cmake -S "$out" --preset native-debug -DBUILD_TESTING=OFF

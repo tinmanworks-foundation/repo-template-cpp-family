@@ -2,6 +2,15 @@
 
 All notable changes to this template are documented here.
 
+## [Unreleased]
+
+### Changed
+- Refreshed generated public doctrine files to the contributor-neutral baseline.
+- Added generated-project validation against maintainer identity content.
+
+### Removed
+- Maintainer identity and username-ladder doctrine files from generated public projects.
+
 ## [0.1.0] - 2026-02-28
 
 ### Added
